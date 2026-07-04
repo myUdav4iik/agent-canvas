@@ -87,9 +87,11 @@ sequenceDiagram
     loop per task node
         E->>LLM: stream completion
         LLM-->>E: tokens + tool calls
-        E-->>B: TraceEvents (SSE)
+        E-->>API: TraceEvents
+        API-->>B: forward over SSE
     end
-    E-->>B: run_completed
+    E-->>API: run_completed
+    API-->>B: final metrics
 ```
 
 Deeper dive: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.

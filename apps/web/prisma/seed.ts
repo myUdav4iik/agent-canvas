@@ -266,17 +266,17 @@ const flow1: FlowSeed = {
   description:
     "Researcher gathers information, Writer drafts an article, then the Critic reviews it up to 3 times. A condition node routes to Approved or Needs Revision based on QUALITY_PASS/FAIL in the critique.",
   nodes: [
-    { id: "seed-node-start", type: "start", positionX: 60, positionY: 300, label: "Start" },
-    { id: "seed-node-task-research", type: "task", positionX: 280, positionY: 300, label: "Research", taskId: "seed-task-research", agentId: "seed-agent-researcher" },
-    { id: "seed-node-task-write", type: "task", positionX: 520, positionY: 300, label: "Write Article", taskId: "seed-task-write", agentId: "seed-agent-writer" },
-    { id: "seed-node-loop", type: "loop", positionX: 760, positionY: 300, label: "Review Loop", loopType: "fixed-n", loopMax: 3 },
-    { id: "seed-node-task-critique", type: "task", positionX: 980, positionY: 140, label: "Critique", taskId: "seed-task-critique", agentId: "seed-agent-critic" },
+    { id: "seed-node-start", type: "start", positionX: 40, positionY: 330, label: "Start" },
+    { id: "seed-node-task-research", type: "task", positionX: 240, positionY: 300, label: "Research", taskId: "seed-task-research", agentId: "seed-agent-researcher" },
+    { id: "seed-node-task-write", type: "task", positionX: 540, positionY: 300, label: "Write Article", taskId: "seed-task-write", agentId: "seed-agent-writer" },
+    { id: "seed-node-loop", type: "loop", positionX: 840, positionY: 315, label: "Review Loop", loopType: "fixed-n", loopMax: 3 },
+    { id: "seed-node-task-critique", type: "task", positionX: 1140, positionY: 90, label: "Critique", taskId: "seed-task-critique", agentId: "seed-agent-critic" },
     {
-      id: "seed-node-condition", type: "condition", positionX: 980, positionY: 440, label: "Score ≥ 7?",
+      id: "seed-node-condition", type: "condition", positionX: 1140, positionY: 500, label: "Score ≥ 7?",
       conditionExpr: "Object.values(outputs).some(function(v){ return String(v).indexOf('QUALITY_PASS') !== -1; })",
     },
-    { id: "seed-node-end-pass", type: "end", positionX: 1200, positionY: 340, label: "Approved" },
-    { id: "seed-node-end-fail", type: "end", positionX: 1200, positionY: 540, label: "Needs Revision" },
+    { id: "seed-node-end-pass", type: "end", positionX: 1440, positionY: 420, label: "Approved" },
+    { id: "seed-node-end-fail", type: "end", positionX: 1440, positionY: 640, label: "Needs Revision" },
   ],
   edges: [
     { id: "seed-edge-start-research", sourceNodeId: "seed-node-start", targetNodeId: "seed-node-task-research", type: "sequential" },
@@ -344,16 +344,16 @@ const flow2: FlowSeed = {
   description:
     "Developer writes an LRU cache implementation, then the Code Reviewer critiques it up to 3 times. Each iteration the developer applies feedback. A condition checks for CODE_APPROVED to route to Ship It or Needs Rework.",
   nodes: [
-    { id: "seed2-n-start", type: "start", positionX: 60, positionY: 280, label: "Start" },
-    { id: "seed2-n-write", type: "task", positionX: 280, positionY: 280, label: "Write Code", taskId: "seed2-task-write-code", agentId: "seed2-agent-developer" },
-    { id: "seed2-n-loop", type: "loop", positionX: 520, positionY: 280, label: "Review Loop", loopType: "fixed-n", loopMax: 3 },
-    { id: "seed2-n-review", type: "task", positionX: 740, positionY: 120, label: "Code Review", taskId: "seed2-task-review-code", agentId: "seed2-agent-reviewer" },
+    { id: "seed2-n-start", type: "start", positionX: 40, positionY: 310, label: "Start" },
+    { id: "seed2-n-write", type: "task", positionX: 240, positionY: 280, label: "Write Code", taskId: "seed2-task-write-code", agentId: "seed2-agent-developer" },
+    { id: "seed2-n-loop", type: "loop", positionX: 540, positionY: 295, label: "Review Loop", loopType: "fixed-n", loopMax: 3 },
+    { id: "seed2-n-review", type: "task", positionX: 840, positionY: 80, label: "Code Review", taskId: "seed2-task-review-code", agentId: "seed2-agent-reviewer" },
     {
-      id: "seed2-n-cond", type: "condition", positionX: 740, positionY: 440, label: "Approved?",
+      id: "seed2-n-cond", type: "condition", positionX: 840, positionY: 480, label: "Approved?",
       conditionExpr: "Object.values(outputs).some(function(v){ return String(v).indexOf('CODE_APPROVED') !== -1; })",
     },
-    { id: "seed2-n-ship", type: "end", positionX: 960, positionY: 340, label: "Ship It ✅" },
-    { id: "seed2-n-rework", type: "end", positionX: 960, positionY: 540, label: "Needs Rework" },
+    { id: "seed2-n-ship", type: "end", positionX: 1140, positionY: 400, label: "Ship It ✅" },
+    { id: "seed2-n-rework", type: "end", positionX: 1140, positionY: 620, label: "Needs Rework" },
   ],
   edges: [
     { id: "seed2-e-start-write", sourceNodeId: "seed2-n-start", targetNodeId: "seed2-n-write", type: "sequential" },
@@ -458,12 +458,12 @@ const flow3: FlowSeed = {
   description:
     "Four-agent sequential pipeline: Innovator generates product ideas, Market Analyst picks and validates the best one, PM writes a one-page spec, Tech Architect assesses feasibility. The spec is auto-saved as a vault note.",
   nodes: [
-    { id: "seed3-n-start", type: "start", positionX: 60, positionY: 280, label: "Start" },
-    { id: "seed3-n-ideate", type: "task", positionX: 280, positionY: 280, label: "Ideate", taskId: "seed3-task-ideate", agentId: "seed3-agent-innovator" },
-    { id: "seed3-n-validate", type: "task", positionX: 520, positionY: 280, label: "Validate", taskId: "seed3-task-validate", agentId: "seed3-agent-analyst" },
-    { id: "seed3-n-spec", type: "task", positionX: 760, positionY: 280, label: "Write Spec", taskId: "seed3-task-spec", agentId: "seed3-agent-pm" },
-    { id: "seed3-n-feasible", type: "task", positionX: 1000, positionY: 280, label: "Feasibility", taskId: "seed3-task-feasibility", agentId: "seed3-agent-architect" },
-    { id: "seed3-n-end", type: "end", positionX: 1240, positionY: 280, label: "Done" },
+    { id: "seed3-n-start", type: "start", positionX: 40, positionY: 310, label: "Start" },
+    { id: "seed3-n-ideate", type: "task", positionX: 240, positionY: 280, label: "Ideate", taskId: "seed3-task-ideate", agentId: "seed3-agent-innovator" },
+    { id: "seed3-n-validate", type: "task", positionX: 540, positionY: 280, label: "Validate", taskId: "seed3-task-validate", agentId: "seed3-agent-analyst" },
+    { id: "seed3-n-spec", type: "task", positionX: 840, positionY: 280, label: "Write Spec", taskId: "seed3-task-spec", agentId: "seed3-agent-pm" },
+    { id: "seed3-n-feasible", type: "task", positionX: 1140, positionY: 280, label: "Feasibility", taskId: "seed3-task-feasibility", agentId: "seed3-agent-architect" },
+    { id: "seed3-n-end", type: "end", positionX: 1440, positionY: 310, label: "Done" },
   ],
   edges: [
     { id: "seed3-e-start-ideate", sourceNodeId: "seed3-n-start", targetNodeId: "seed3-n-ideate", type: "sequential" },
@@ -548,11 +548,11 @@ const flow4: FlowSeed = {
   description:
     "Three-agent sequential pipeline: Brainstormer generates a mix of weekend pet-project and startup ideas, Idea Triager scores and picks the best of each, Idea Curator writes an actionable build brief for both. The brief is auto-saved as a vault note.",
   nodes: [
-    { id: "seed4-n-start", type: "start", positionX: 60, positionY: 280, label: "Start" },
-    { id: "seed4-n-brainstorm", type: "task", positionX: 280, positionY: 280, label: "Brainstorm", taskId: "seed4-task-brainstorm", agentId: "seed4-agent-brainstormer" },
-    { id: "seed4-n-triage", type: "task", positionX: 520, positionY: 280, label: "Triage", taskId: "seed4-task-triage", agentId: "seed4-agent-triager" },
-    { id: "seed4-n-curate", type: "task", positionX: 760, positionY: 280, label: "Curate", taskId: "seed4-task-curate", agentId: "seed4-agent-curator" },
-    { id: "seed4-n-end", type: "end", positionX: 1000, positionY: 280, label: "Done" },
+    { id: "seed4-n-start", type: "start", positionX: 40, positionY: 310, label: "Start" },
+    { id: "seed4-n-brainstorm", type: "task", positionX: 240, positionY: 280, label: "Brainstorm", taskId: "seed4-task-brainstorm", agentId: "seed4-agent-brainstormer" },
+    { id: "seed4-n-triage", type: "task", positionX: 540, positionY: 280, label: "Triage", taskId: "seed4-task-triage", agentId: "seed4-agent-triager" },
+    { id: "seed4-n-curate", type: "task", positionX: 840, positionY: 280, label: "Curate", taskId: "seed4-task-curate", agentId: "seed4-agent-curator" },
+    { id: "seed4-n-end", type: "end", positionX: 1140, positionY: 310, label: "Done" },
   ],
   edges: [
     { id: "seed4-e-start-brainstorm", sourceNodeId: "seed4-n-start", targetNodeId: "seed4-n-brainstorm", type: "sequential" },

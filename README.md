@@ -55,46 +55,41 @@ The seed ships four ready-to-run flows (re-run `pnpm --filter web db:seed` any t
 ## How it works
 
 ```mermaid
-flowchart LR
-    subgraph web["apps/web — Next.js 15"]
-        Canvas["Canvas<br/>(React Flow)"]
-        API["API routes"]
-        Stream["SSE stream<br/>/api/runs/:id/stream"]
-        UI["Trace timeline<br/>+ live canvas"]
-    end
-    subgraph engine["packages/engine — plain TS"]
-        Runner["flow-runner<br/>(graph traversal)"]
-        ReAct["ReAct loop<br/>(reason + act)"]
-        Adapters["LLM adapters<br/>Anthropic · OpenAI · Ollama · Claude CLI"]
-        Tools["Tool registry<br/>calculator · http_fetch · vault"]
-    end
-    Vault[("vault/*.md")]
-    DB[("SQLite<br/>via Prisma")]
+flowchart TD
+    Canvas["🎨 Canvas — React Flow"] -->|save flow| DB[("SQLite via Prisma")]
+    Canvas -->|Run| Runner["flow-runner — graph traversal"]
 
-    Canvas -->|save flow| API --> DB
-    API -->|Run| Runner --> ReAct --> Adapters
-    ReAct --> Tools --> Vault
-    Runner -->|TraceEvent| Stream --> UI
-    Runner --> DB
+    subgraph engine["packages/engine — plain TypeScript"]
+        direction TB
+        Runner --> ReAct["ReAct loop"]
+        ReAct --> Adapters["LLM adapters: Anthropic · OpenAI · Ollama · Claude CLI"]
+        ReAct --> Tools["tools: calculator · http_fetch · vault read/write"]
+    end
+
+    Tools --> Vault[("vault/*.md")]
+    Runner -->|TraceEvent stream| SSE["SSE endpoint"]
+    SSE --> UI["live canvas glow + trace timeline"]
+    Runner -->|persist events| DB
 ```
 
 Everything the engine does is expressed as a **TraceEvent** — a discriminated union of 19 event types (`packages/shared/src/types/trace.ts`) that is the single contract between engine and UI. Events stream to the browser live, persist to SQLite for replay, and drive the canvas node states.
 
 ```mermaid
 sequenceDiagram
-    participant U as Browser
-    participant A as POST /api/runs
-    participant E as flow-runner
-    participant L as LLM provider
+    autonumber
+    participant B as Browser
+    participant API as Next.js API
+    participant E as Engine
+    participant LLM as Provider
 
-    U->>A: Run flow
-    A->>E: traverse graph (BFS from Start)
-    loop each agent/task node
-        E->>L: ReAct loop (stream)
-        L-->>E: tokens / tool calls
-        E-->>U: TraceEvents over SSE
+    B->>API: run flow
+    API->>E: traverse graph
+    loop per task node
+        E->>LLM: stream completion
+        LLM-->>E: tokens + tool calls
+        E-->>B: TraceEvents (SSE)
     end
-    E-->>U: run_completed (tokens, duration)
+    E-->>B: run_completed
 ```
 
 Deeper dive: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.

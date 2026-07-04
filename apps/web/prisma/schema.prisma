@@ -1,0 +1,172 @@
+// This is the full stable schema — all tables defined from M1.
+// Later milestones add functionality but not new tables.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id              String      @id @default(cuid())
+  name            String
+  role            String
+  goal            String
+  backstory       String      @default("")
+  llmProvider     String      // "anthropic" | "openai" | "ollama"
+  llmModel        String
+  llmParams       String      @default("{}") // JSON: { temperature, maxTokens, topP }
+  memoryScope     String      @default("[]") // JSON array of vault folder paths / #tags
+  maxIterations   Int         @default(10)
+  allowDelegation Boolean     @default(false)
+  verbose         Boolean     @default(false)
+  agentTools      AgentTool[]
+  tasks           Task[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Tool {
+  id           String      @id @default(cuid())
+  name         String      @unique
+  description  String
+  type         String      // "builtin" | "user_defined"
+  argsSchema   String      // JSON Schema object
+  funcBody     String?     // JS function body for user_defined tools
+  httpEndpoint String?     // HTTP endpoint for user_defined tools
+  agentTools   AgentTool[]
+  createdAt    DateTime    @default(now())
+}
+
+model AgentTool {
+  agentId String
+  toolId  String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tool    Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@id([agentId, toolId])
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  description     String
+  expectedOutput  String
+  assignedAgentId String?
+  agent           Agent?   @relation(fields: [assignedAgentId], references: [id])
+  contextTaskIds  String   @default("[]") // JSON array of upstream Task IDs
+  outputFormat    String   @default("text") // "text" | "json" | "markdown-note"
+  outputSchema    String?  // JSON Schema string, only used when outputFormat = "json"
+  humanInTheLoop  Boolean  @default(false)
+  crewId          String?
+  crew            Crew?    @relation(fields: [crewId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Crew {
+  id        String   @id @default(cuid())
+  name      String
+  process   String   @default("sequential") // "sequential" | "hierarchical"
+  tasks     Task[]
+  flowId    String?  @unique
+  flow      Flow?    @relation(fields: [flowId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Flow {
+  id          String     @id @default(cuid())
+  name        String
+  description String     @default("")
+  nodes       FlowNode[]
+  edges       FlowEdge[]
+  crew        Crew?
+  runs        Run[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model FlowNode {
+  id                  String     @id @default(cuid())
+  flowId              String
+  flow                Flow       @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  type                String     // "start"|"end"|"agent"|"task"|"loop"|"condition"|"parallel"|"join"
+  positionX           Float
+  positionY           Float
+  label               String     @default("")
+  agentId             String?
+  taskId              String?
+  loopType            String?    // "fixed-n"|"while"|"until"|"for-each"
+  loopMax             Int?
+  loopCondition       String?    // expression string for break condition
+  conditionExpr       String?    // expression string for routing
+  parallelBranchCount Int?
+  sourceEdges         FlowEdge[] @relation("SourceNode")
+  targetEdges         FlowEdge[] @relation("TargetNode")
+  createdAt           DateTime   @default(now())
+}
+
+model FlowEdge {
+  id           String   @id @default(cuid())
+  flowId       String
+  flow         Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  sourceNodeId String
+  targetNodeId String
+  sourceNode   FlowNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode   FlowNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  type         String   @default("sequential") // "sequential"|"conditional"|"loop"|"parallel"
+  label        String   @default("")
+  condition    String?
+  createdAt    DateTime @default(now())
+}
+
+model Run {
+  id           String          @id @default(cuid())
+  flowId       String
+  flow         Flow            @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  status       String          @default("running") // "running"|"completed"|"failed"|"killed"|"paused"
+  startedAt    DateTime        @default(now())
+  completedAt  DateTime?
+  durationMs   Int?
+  totalTokens  Int             @default(0)
+  totalCostUsd Float           @default(0)
+  events       TraceEventRow[]
+}
+
+model TraceEventRow {
+  id        String   @id @default(cuid())
+  runId     String
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  sequence  Int
+  eventType String   // matches TraceEvent["type"] discriminant
+  payload   String   // JSON-serialized full TraceEvent
+  timestamp DateTime @default(now())
+
+  @@index([runId, sequence])
+}
+
+model VaultNote {
+  id          String     @id @default(cuid())
+  path        String     @unique // relative to vault/, e.g. "research/ai-agents.md"
+  title       String
+  tags        String     @default("[]")  // JSON array of tag strings
+  frontmatter String     @default("{}") // JSON object
+  body        String     @default("")
+  outLinks    NoteLink[] @relation("NoteFrom")
+  inLinks     NoteLink[] @relation("NoteTo")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model NoteLink {
+  id         String    @id @default(cuid())
+  fromNoteId String
+  toNoteId   String
+  fromNote   VaultNote @relation("NoteFrom", fields: [fromNoteId], references: [id], onDelete: Cascade)
+  toNote     VaultNote @relation("NoteTo",   fields: [toNoteId],   references: [id], onDelete: Cascade)
+
+  @@unique([fromNoteId, toNoteId])
+}

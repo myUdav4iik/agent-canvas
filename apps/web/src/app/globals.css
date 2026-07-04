@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ──────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Surfaces */
+  --color-canvas:   #020810;
+  --color-base:     #080d18;
+  --color-surface:  #0d1420;
+  --color-elevated: #141c2e;
+
+  /* Borders */
+  --color-border:        #1e2a40;
+  --color-border-subtle: #131c30;
+
+  /* Text */
+  --color-text-1: #e2e8f4;
+  --color-text-2: #7d92ad;
+  --color-text-3: #3d5070;
+
+  /* Accent */
+  --color-accent:     #3b82f6;
+  --color-accent-dim: rgba(59, 130, 246, 0.12);
+
+  /* Node colors */
+  --color-node-agent: #3b82f6;
+  --color-node-task:  #8b5cf6;
+  --color-node-loop:  #f59e0b;
+  --color-node-cond:  #10b981;
+  --color-node-para:  #06b6d4;
+  --color-node-ctrl:  #475569;
+
+  /* State colors */
+  --color-state-running: #3b82f6;
+  --color-state-done:    #10b981;
+  --color-state-error:   #ef4444;
+  --color-state-paused:  #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-base);
+  color: var(--color-text-1);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2d3d57;
+}
+
+/* ── ReactFlow overrides ────────────────────────────────────────────────────── */
+.react-flow__controls {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+.react-flow__controls button {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-2) !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+.react-flow__controls button:last-child {
+  border-bottom: none !important;
+}
+.react-flow__controls button:hover {
+  background: var(--color-elevated) !important;
+  color: var(--color-text-1) !important;
+}
+.react-flow__controls-fitview svg,
+.react-flow__controls-zoomin svg,
+.react-flow__controls-zoomout svg,
+.react-flow__controls-interactive svg {
+  fill: currentColor;
+}
+
+.react-flow__minimap {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 6px !important;
+}
+
+/* Edge selection highlight */
+.react-flow__edge.selected path {
+  stroke-opacity: 1 !important;
+}
+.react-flow__edge:hover path {
+  stroke-opacity: 0.85 !important;
+}
+
+/* Handle dots */
+.react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  border-width: 1.5px !important;
+}
+.react-flow__handle:hover {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* Node selection box */
+.react-flow__node.selected > * {
+  outline: none;
+}
+
+/* ── Animation utilities ────────────────────────────────────────────────────── */
+@keyframes pulse-ring {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-in-out infinite;
+}
